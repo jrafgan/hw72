@@ -1,6 +1,6 @@
 import React from 'react';
 import reducer from './store/reducer';
-import {Provider, connect} from 'react-redux';
+import {Provider} from 'react-redux';
 import Main from "./components/Main";
 import thunkMiddleware from 'redux-thunk';
 import {createStore, applyMiddleware, compose} from 'redux';

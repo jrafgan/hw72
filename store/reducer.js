@@ -2,71 +2,64 @@ import {
     FETCH_ERROR,
     FETCH_FINALLY,
     FETCH_START,
-    FETCH_SUCCESS,
+    FETCH_SUCCESS, SHOW_MODAL,
+    TOGGLE_MODAL
 } from "./actionTypes";
-import axios from '../axios_url'
 
-export const fetchFinnaly = () => {
-    return {type: FETCH_FINALLY}
+const initialState = {
+    modalVisible: false,
+    list: [],
+    after: '',
+
 };
 
-export const fetchSuccess = (resp) => {
-    return {type: FETCH_SUCCESS, resp}
-};
+const reducer = (state = initialState, action) => {
 
-export const fetchStart = () => {
-    return {type: FETCH_START}
-};
+        switch (action.type) {
 
-export const fetchError = (error) => {
-    return {type: FETCH_ERROR, error}
-};
+            case FETCH_START:
+                return {
+                    ...state,
+                    modalVisible: true,
+                };
 
-export const addOrder = (order) => {
-    return {type: ADD_ORDER, order}
-};
+            case FETCH_SUCCESS:
+                if (state.after === action.after) return {...state, modalVisible: false};
+                let copy = state.list;
+                copy.push(...action.res);
+                return {
+                    ...state,
+                    modalVisible: false,
+                    list: copy,
+                    after: action.after,
+                };
 
-export const toggleModal = () => {
-    return {type: TOGGLE_MODAL}
-};
+            case FETCH_ERROR:
+                return {
+                    ...state,
+                    modalVisible: false,
+                    error: action.error
+                };
 
-export const initialState = () => {
-    return {type: INITIAL_STATE}
-};
+            case FETCH_FINALLY:
+                return {
+                    ...state,
+                    modalVisible: false,
+                };
 
-export const deleteOrder = (ndx) => {
-    return {type: DELETE_ORDER, ndx}
-};
+            case SHOW_MODAL:
+                return {
+                    ...state,
+                    modalVisible: !state.modalVisible,
+                };
 
-export const fetchDishes = () => {
-    return (dispatch) => {
-        dispatch(fetchStart());
-        axios.get('pizzaDishes.json').then(response => {
 
-            dispatch(fetchSuccess(response.data));
-        }, error => {
-            dispatch(fetchError(error));
-        });
+            default:
+                break;
+        }
+        return state;
+
     }
-};
+;
 
-export const saveOrder = (userData) => {
-
-    return (dispatch, getState) => {
-        const state = getState();
-        const order = {...userData, orderedItems: []};
-
-        state.orderList.map((item, id)=> {
-            const menuKeysArr = Object.keys(state.menu);
-            const menuValuesArr = Object.values(state.menu);
-            const ndx = menuValuesArr.findIndex(elem=>elem.name === item.name);
-            order.orderedItems.push({id: menuKeysArr[ndx], qty: item.qty});
-        });
-        console.log('orderInfo sent to API only id and qty ====', order);
-        dispatch(fetchStart());
-
-        axios.post('orderedPizzaDishes.json', order).then(response => {
-            dispatch(fetchDishes());
-        });
-    }
-};
+export default reducer;
